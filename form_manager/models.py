@@ -87,16 +87,68 @@ from django.utils.translation import ugettext_lazy as _
 #);
 
 class Form(models.Model):
-    """ Modelname """
+    """
+    Form 
+    """
+
+    STORE_CHOICES = (
+        (1, _('Do not save')),
+        (2, _('CSV File')),
+        (3, _('HTML File')),
+        (4, _('Text File')),
+    )
+
+    SEND_CHOICES = (
+        (1, _('Inline Text Only')),
+        (2, _('Attached CSV')),
+        (3, _('Attached HTML')),
+        (4, _('Attached Text')),
+    )
+
+    name = models.CharField(max_length=250) 
+    owner = models.EmailField(_('E-mail'))
+    abstract = models.TextField()
     active = models.BooleanField(_('active'), default=True)
     start_date = models.DateTimeField(_('start date'))
     stop_date = models.DateTimeField(_('stop date'))
-    
-    slug = models.SlugField(_('slug'),unique_for_date='pub_date')
-    name = models.CharField(max_length=250) 
 
     created = models.DateTimeField(_('created'), auto_now=True, editable=False)
     modified = models.DateTimeField(_('last modified'), auto_now=True, editable=False)
 
-    abstract = models.TextField()
+    redirect = models.URLField(_('Completed Page'),)
 
+    slug = models.SlugField(_('slug'),unique=True)
+
+    store = models.IntegerField(_('Store Locally As'), choices=STORE_CHOICES, default=1)
+    send = models.IntegerField(_('Send Data As'), choices=SEND_CHOICES, default=1)
+
+
+class Element(models.Model):
+    """
+    Elements 
+    """
+
+    TYPE_CHOICES = (
+        ('raw', _('raw')),
+        ('button', _('button')),
+        ('checkbox', _('checkbox')),
+        ('file', _('file')),
+        ('hidden', _('hidden')),
+        ('image', _('image')),
+        ('password', _('password')),
+        ('radio', _('radio')),
+        ('reset', _('reset')),
+        ('select', _('select')),
+        ('submit', _('submit')),
+        ('text', _('text')),
+    )
+
+    form = models.ForeignKey(Form)
+
+    page = models.IntegerField()
+    order = models.IntegerField()
+    slug = models.SlugField()
+
+    label = models.CharField(max_length=250) 
+    type = models.CharField(_('Type'), max_length=20, choices=TYPE_CHOICES)
+    value = models.TextField()
