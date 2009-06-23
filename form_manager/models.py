@@ -143,12 +143,27 @@ class Element(models.Model):
         ('text', _('text')),
     )
 
+    REQUIRE_CHOICES = (
+        ('none', _('None')),
+        ('date', _('Date')),
+        ('email', _('E-mail')),
+        ('not empty', _('Not Empty')),
+        ('number', _('Number')),
+        ('text', _('Text')),
+        ('time', _('Time')),
+        ('url', _('URL')),
+    )
+
     form = models.ForeignKey(Form)
 
-    page = models.IntegerField()
+    page = models.IntegerField(default=1)
     order = models.IntegerField()
-    slug = models.SlugField()
 
     label = models.CharField(max_length=250) 
+    slug = models.SlugField()
+
     type = models.CharField(_('Type'), max_length=20, choices=TYPE_CHOICES)
+    require = models.CharField(_('Requirements'), max_length=20, 
+                               choices=REQUIRE_CHOICES, default='none')
+
     value = models.TextField()

@@ -3,11 +3,15 @@ from django.contrib import admin
 from form_manager.models import Form
 from form_manager.models import Element
 
-class ElementAdmin(admin.ModelAdmin):
-    list_filter = ('form','type')
-
 class ElementInline(admin.StackedInline):
     model = Element
+    fieldsets = [
+                (None, {'fields': ['page','order','label','type',],
+                'description':'Extra awesome', }),
+                ('Detail', {'fields': ['slug','require','value']}),
+    ]
+
+    prepopulated_fields = {'slug': ('label',)}
 
 class FormAdmin(admin.ModelAdmin):
 
@@ -27,4 +31,3 @@ class FormAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Form, FormAdmin)
-admin.site.register(Element, ElementAdmin)
