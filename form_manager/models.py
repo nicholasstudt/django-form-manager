@@ -2,34 +2,6 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 #/* This is the postgresql schema for FormBuilder >= 0.65 */
-#
-#create sequence "form_validate_seq";
-#create table "form_validate" (
-#	"id" integer primary key not null default nextval( 'form_validate_seq' ),
-#	"name" 	varchar not null,
-#	"regex" varchar,
-#	"func" 	varchar
-#);
-#
-#create sequence "form_types_seq";
-#create table "form_types" (
-#	"id" 	integer primary key not null default nextval( 'form_types_seq' ),
-#	"type" 		varchar,
-#	"name" 		varchar default '0',
-#	"value" 	varchar default '0',
-#	"row" 		varchar default '0',
-#	"col" 		varchar default '0',
-#	"size" 		varchar default '0',
-#	"max" 		varchar default '0',
-#	"checkd" 	varchar default '0',
-#	"read" 		varchar default '0',
-#	"mult" 		varchar default '0',
-#	"tab" 		varchar default '0',
-#	"css" 		varchar default '0',
-#	"src" 		varchar default '0',
-#	"alt" 		varchar default '0' 
-#);
-#
 #create sequence "form_data_seq";
 #create table "form_data" (
 #	"id" integer primary key not null default nextval( 'form_data_seq' ),
@@ -86,9 +58,16 @@ from django.utils.translation import ugettext_lazy as _
 #	"error_msg" 			text
 #);
 
+class ActiveManager(models.Manager):
+    """Returns published posts that are not in the future.""" 
+    
+    def active(self, **kwargs):
+        return self.get_query_set().filter(active=True, **kwargs)
+
+
 class Form(models.Model):
     """
-    Form 
+    Forms
     """
 
     STORE_CHOICES = (
@@ -99,6 +78,7 @@ class Form(models.Model):
     )
 
     SEND_CHOICES = (
+        (0, _('Do Not Send')),
         (1, _('Inline Text Only')),
         (2, _('Attached CSV')),
         (3, _('Attached HTML')),
@@ -109,11 +89,10 @@ class Form(models.Model):
     owner = models.EmailField(_('E-mail'))
     abstract = models.TextField()
     active = models.BooleanField(_('active'), default=True)
-    start_date = models.DateTimeField(_('start date'))
-    stop_date = models.DateTimeField(_('stop date'))
 
-    created = models.DateTimeField(_('created'), auto_now=True, editable=False)
-    modified = models.DateTimeField(_('last modified'), auto_now=True, editable=False)
+    # I don't recall this ever really being used. 
+    #start_date = models.DateTimeField(_('start date'))
+    #stop_date = models.DateTimeField(_('stop date'))
 
     redirect = models.URLField(_('Completed Page'),)
 
@@ -121,11 +100,19 @@ class Form(models.Model):
 
     store = models.IntegerField(_('Store Locally As'), choices=STORE_CHOICES, default=1)
     send = models.IntegerField(_('Send Data As'), choices=SEND_CHOICES, default=1)
+    
+    objects = ActiveManager()
 
+    def __unicode__(self):
+        return( u'%s' % self.name )
+
+    def get_absolute_url(self):
+        return ('form_manager_form', (), { 'slug': self.slug })
+    get_absolute_url = models.permalink(get_absolute_url)
 
 class Element(models.Model):
     """
-    Elements 
+    Form Elements 
     """
 
     TYPE_CHOICES = (
@@ -166,4 +153,9 @@ class Element(models.Model):
     require = models.CharField(_('Requirements'), max_length=20, 
                                choices=REQUIRE_CHOICES, default='none')
 
-    value = models.TextField()
+    value = models.TextField(blank=True)
+
+    def __unicode__(self):
+        return( u'%s.%s: %s' % (self.page, self.order, self.label) )
+
+
