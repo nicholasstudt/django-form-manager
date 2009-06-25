@@ -1,63 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-#/* This is the postgresql schema for FormBuilder >= 0.65 */
-#create sequence "form_data_seq";
-#create table "form_data" (
-#	"id" integer primary key not null default nextval( 'form_data_seq' ),
-#	"active" 				boolean,
-#	"send_email"			boolean,
-#	"page_count" 			integer,
-#	"number_of_elements" 	integer default '0',
-#	"created" 				timestamp with time zone,
-#	"modified" 				timestamp with time zone,
-#	"start_date" 			timestamp with time zone,
-#	"stop_date" 			timestamp with time zone,
-#	"ident" 				varchar not null, -- name of form and uri 
-#	"name" 					varchar, -- display name of form (pretty)
-#	"email_address" 		varchar not null, -- to send results to
-#	"email_subject" 		varchar,
-#	"redirect_cancel" 		varchar not null, -- for cancel and conclusion
-#	"redirect_confirm" 		varchar,
-#	"confirm_page"			varchar,
-#	"frame" 				varchar,
-#	"store_as" 				varchar,
-#	"send_as" 				varchar,
-#	"filename"				varchar,
-#	"description" 			text,
-#);
-#
-#create sequence "form_element_seq";
-#create table "form_element" (
-#	"id" integer primary key not null default nextval( 'form_element_seq' ),
-#	"isdefault"				boolean default 'false',
-#	"required" 				boolean default 'false',
-#	"checked" 				boolean default 'false',
-#	"readonly" 				boolean default 'false',
-#	"multiple" 				boolean default 'false',
-#	"form_data_id" 			integer, -- form_data.id
-#	"form_types_id" 		integer, -- form_types.id
-#	"form_validate_id" 		integer, -- form_validate.id
-#	"max_length" 			integer,
-#	"tab_index" 			integer,
-#	"row_count" 			integer, 
-#	"col_count" 			integer,
-#	"size_count" 			integer,
-#	"page_number" 			integer,
-#	"created" 				timestamp with time zone,
-#	"modified" 				timestamp with time zone,
-#	"question_number" 		real,
-#	"name" 					varchar not null,
-#	"value" 				varchar,
-#	"css_class" 			varchar,
-#	"src"				 	varchar,
-#	"addition_params" 		text,
-#	"alt"				 	text,
-#	"pre_text" 				text,
-#	"post_text" 			text,
-#	"error_msg" 			text
-#);
-
 class ActiveManager(models.Manager):
     """Returns published posts that are not in the future.""" 
     
@@ -116,25 +59,25 @@ class Element(models.Model):
     """
 
     TYPE_CHOICES = (
-        ('raw', _('raw')),
-        ('button', _('button')),
+        ('raw', _('raw')), 
+        #('button', _('button')), # Use <button>
         ('checkbox', _('checkbox')),
         ('file', _('file')),
         ('hidden', _('hidden')),
-        ('image', _('image')),
+        ('image', _('image')),  # Use <button>
         ('password', _('password')),
         ('radio', _('radio')),
-        ('reset', _('reset')),
-        ('select', _('select')),
-        ('submit', _('submit')),
+        ('reset', _('reset')), # Use <button>
+        ('select', _('select')), 
+        ('submit', _('submit')), # Use <button>
         ('text', _('text')),
+        ('textarea', _('textarea')),
     )
 
     REQUIRE_CHOICES = (
         ('none', _('None')),
         ('date', _('Date')),
         ('email', _('E-mail')),
-        ('not empty', _('Not Empty')),
         ('number', _('Number')),
         ('text', _('Text')),
         ('time', _('Time')),
@@ -154,6 +97,10 @@ class Element(models.Model):
                                choices=REQUIRE_CHOICES, default='none')
 
     value = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['page', 'order']
+
 
     def __unicode__(self):
         return( u'%s.%s: %s' % (self.page, self.order, self.label) )

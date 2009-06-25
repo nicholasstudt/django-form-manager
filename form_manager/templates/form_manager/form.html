@@ -1,0 +1,38 @@
+{% extends "form_manager/base.html" %}
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} {% trans "Forms" %}{% endblock %}
+{% block body_class %}{{ block.super }} entry_list{% endblock %}
+{% block content_title %}{% trans "Form listing" %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans "A Form" %}</h1>
+
+    <h2>{{ item.name }}</h2>
+
+    <p>
+        Walk through the elements and display either the raw data or the
+        form data from the per-built form.
+    </p>
+
+    <hr>
+
+    {% for element in elements %}
+        {% ifequal element.type "raw" %}
+            {{ element.value|safe }}
+        {% endifequal %}
+        {% ifnotequal element.type "raw" %}
+            Show the form part<br />  
+        {% endifnotequal %}
+    {% endfor %}
+
+<hr>
+
+<form action="" method="POST">
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+
+
+{% endblock %}

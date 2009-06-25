@@ -1,0 +1,32 @@
+{% extends "form_manager/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ block.super }} {% trans "Forms" %}{% endblock %}
+{% block body_class %}{{ block.super }} entry_list{% endblock %}
+{% block content_title %}{% trans "Form listing" %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans "Forms" %}</h1>
+    <dl>
+    {% for entry in object_list %}
+        <dt><a href="{{ entry.get_absolute_url }}">{{ entry.name }}</a></dt>
+        <dd>{{ entry.abstract|safe }}</dd>
+    {% endfor %}
+    </dl>
+
+	{% if is_paginated %}
+		<div class="paginated_footer">
+		{% if has_next %}
+			<div class="next" >
+				<a class="older" href="?page={{ next }}">Older</a>
+			</div>
+		{% endif %}
+		{% if has_next and has_previous %} | {% endif %}
+		{% if has_previous %}
+			<div class="prev" >
+				<a class="newer" href="?page={{ previous }}">Newer</a>
+			</div>
+		{% endif %}
+		</div>
+	{% endif %}
+{% endblock %}
