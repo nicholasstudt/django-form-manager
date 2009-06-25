@@ -16,14 +16,13 @@ class FormAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('General', 
-            {'fields':
-                ['name','slug','owner', 'abstract', 'active',
-                 'redirect','store','send']}),
+            {'fields': ['name','slug','owner', 'abstract', 'active',
+                        'redirect','store','send']}),
     ]
 
     list_display = ('name','owner','active')
     prepopulated_fields = {'slug': ('name',)}
     save_on_top = True
-    inlines = [ ElementInline, ]
+    inlines = [ElementInline,]
 
 admin.site.register(Form, FormAdmin)
