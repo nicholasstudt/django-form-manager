@@ -13,7 +13,14 @@
 
     <p>
         Walk through the elements and display either the raw data or the
-        form data from the per-built form.
+        form data from the per-built form.<br>
+        
+        'raw',  <br>
+        'image', _('image')),  # Use button<br>
+        'reset', _('reset')), # Use button<br>
+        'submit', _('submit')), # Use button<br>
+
+        If there is a file element make the form use the right enctype.
     </p>
 
     <hr>
@@ -29,8 +36,37 @@
 
 <hr>
 
-<form action="" method="POST">
-{{ form.as_p }}
+{% if form.is_multipart %}
+    <form enctype="multipart/form-data" method="post" action="">
+{% else %}
+    <form method="post" action="">
+{% endif %}
+
+
+{% if form.errors %}
+	 <p class="errornote">
+	 {% blocktrans count form.errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+	 </p>
+	 <ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+{% endif %}
+
+<fieldset class="module aligned {{ fieldset.classes }}"> 
+{% for field in form %}
+  {% if field.is_hidden %}
+    {{ field }}
+  {% else %}
+    <div class="form-row{% if field.errors %} errors{% endif %}">
+      {% if field.errors %}{{ field.errors }}{% endif %}
+		<div class="field-box">
+      {{ field.label_tag }} 
+      {{ field }}
+		{% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p> {% endif %}
+		</div>
+    </div>
+  {% endif %}
+{% endfor %}
+</fieldset>
+
 <input type="submit" value="Submit" />
 </form>
 
