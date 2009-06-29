@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.views.generic import list_detail
 
 from form_manager.models import Form, Element
+from form_manager.forms import RawField, ButtonField
 
 def index(request, page=0, **kwargs):
     return list_detail.object_list(
@@ -17,7 +18,19 @@ def index(request, page=0, **kwargs):
 index.__doc__ = list_detail.object_list.__doc__
 
 def make_form(elements):
-    
+   
+    # 'text', 'textarea', 'hidden',
+    # 'password', -- Requirements are boolean
+    # 'checkbox', -- Requirements are boolean
+    # 'file', -- Requirements are boolean
+    # 'radio', 'select',
+
+    # 'raw',  
+    # 'image', _('image')),  # Use <button>
+    # 'reset', _('reset')), # Use <button>
+    # 'submit', _('submit')), # Use <button>
+
+
     # Stuff all of the form fileds in here.
     fields = {} 
 
@@ -25,15 +38,29 @@ def make_form(elements):
 
         args = { 'label': e.label }
 
-        # Raw elements are not part of the form.
-        #if e.type == 'raw':
-        #    continue 
-
         # These items are handled in outside of the form.
-        if e.type in ['raw', 'image', 'reset', 'submit']:
-            continue
+        if e.type == 'raw':
+            args['label'] = ''
+            args['display'] = e.value
+            args['required'] = False
 
-        if e.type in ['hidden', 'text', 'textarea']:
+            if e.require != 'none': 
+                args['required'] = True
+
+            fields[e.slug] = RawField(**args)
+
+        elif e.type in ['image', 'reset', 'submit']:
+            args['label'] = ''
+            args['display'] = e.value
+            args['type'] = e.type
+            args['required'] = False
+
+            if e.require != 'none': 
+                args['required'] = True
+
+            fields[e.slug] = ButtonField(**args)
+
+        elif e.type in ['hidden', 'text', 'textarea']:
             
             if e.type == 'textarea': 
                 args['widget'] = forms.Textarea
@@ -61,33 +88,7 @@ def make_form(elements):
             if e.require == 'url':
                 fields[e.slug] = forms.URLField(**args)
 
-        if e.type == 'password':
-            args['widget'] = forms.PasswordInpurt
-
-            if e.require == 'none':
-                args['required'] = False
-            else:
-                args['required'] = True
-            
-            fields[e.slug] = forms.CharField(**args)
-
-        if e.type == 'checkbox':
-            if e.require == 'none':
-                args['required'] = False
-            else:
-                args['required'] = True
-              
-            fields[e.slug] = forms.BooleanField(**args)
-           
-        if e.type == 'file':
-            if e.require == 'none':
-                args['required'] = False
-            else:
-                args['required'] = True
-              
-            fields[e.slug] = forms.FileField(**args)
-
-        if e.type in ['radio', 'select']:
+        elif e.type in ['radio', 'select']:
 
             if e.type == 'radio':
                 args['widget'] = forms.RadioSelect
@@ -107,39 +108,46 @@ def make_form(elements):
                         
             fields[e.slug] = forms.ChoiceField(**args)
 
-#        'raw',  
-#        'text', 'textarea', 'hidden',
-#        'password', -- Requirements are boolean
-#        'checkbox', -- Requirements are boolean
-#        'file', -- Requirements are boolean
-#        'radio',
-#        'select',
+        elif e.type == 'checkbox':
+            if e.require == 'none':
+                args['required'] = False
+            else:
+                args['required'] = True
+              
+            fields[e.slug] = forms.BooleanField(**args)
+           
+        elif e.type == 'file':
+            if e.require == 'none':
+                args['required'] = False
+            else:
+                args['required'] = True
+              
+            fields[e.slug] = forms.FileField(**args)
 
-#        'image', _('image')),  # Use <button>
-#        'reset', _('reset')), # Use <button>
-#        'submit', _('submit')), # Use <button>
+        elif e.type == 'password':
+            args['widget'] = forms.PasswordInpurt
 
+            if e.require == 'none':
+                args['required'] = False
+            else:
+                args['required'] = True
+            
+            fields[e.slug] = forms.CharField(**args)
+       
     return type('ContactForm', (forms.BaseForm,), { 'base_fields': fields })
-
 
 def form(request, slug=None): 
    
     item = get_object_or_404(Form, slug=slug, active=True)
 
     elements = Element.objects.filter(form=item)
-
-    # Walk through elements, build Form to use for validation.
-    form = make_form(elements, )()
-    #form = f()
-
-    # request.POST, request.FILES
-
+    
     if request.method == 'POST': 
-        pass
+        form = make_form(elements, )(request.POST, request.FILES)
+
     else:
-        pass
+        form = make_form(elements, )()
 
     return render_to_response('form_manager/form.html', 
-                              {'form': form, 'item': item, 
-                               'elements': elements },
+                              {'form': form, 'item': item,},
                               context_instance=template.RequestContext(request))

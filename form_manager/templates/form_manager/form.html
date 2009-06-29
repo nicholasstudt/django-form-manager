@@ -7,41 +7,9 @@
 {% block content_title %}{% trans "Form listing" %}{% endblock %}
 
 {% block content %}
-    <h1>{% trans "A Form" %}</h1>
+    <h1>{{ item.name }}</h1>
 
-    <h2>{{ item.name }}</h2>
-
-    <p>
-        Walk through the elements and display either the raw data or the
-        form data from the per-built form.<br>
-        
-        'raw',  <br>
-        'image', _('image')),  # Use button<br>
-        'reset', _('reset')), # Use button<br>
-        'submit', _('submit')), # Use button<br>
-
-        If there is a file element make the form use the right enctype.
-    </p>
-
-    <hr>
-
-    {% for element in elements %}
-        {% ifequal element.type "raw" %}
-            {{ element.value|safe }}
-        {% endifequal %}
-        {% ifnotequal element.type "raw" %}
-            Show the form part<br />  
-        {% endifnotequal %}
-    {% endfor %}
-
-<hr>
-
-{% if form.is_multipart %}
-    <form enctype="multipart/form-data" method="post" action="">
-{% else %}
-    <form method="post" action="">
-{% endif %}
-
+    <form method="post" action="{% url form_manager_form item.slug %}"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
 
 {% if form.errors %}
 	 <p class="errornote">
@@ -51,6 +19,8 @@
 {% endif %}
 
 <fieldset class="module aligned {{ fieldset.classes }}"> 
+
+
 {% for field in form %}
   {% if field.is_hidden %}
     {{ field }}
@@ -58,17 +28,19 @@
     <div class="form-row{% if field.errors %} errors{% endif %}">
       {% if field.errors %}{{ field.errors }}{% endif %}
 		<div class="field-box">
-      {{ field.label_tag }} 
-      {{ field }}
+        {% if field.label %}{{ field.label_tag }}{% endif %}
+        {{ field }}
 		{% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p> {% endif %}
 		</div>
     </div>
   {% endif %}
 {% endfor %}
-</fieldset>
 
-<input type="submit" value="Submit" />
+<!--<input type="submit" value="Submit" /> -->
+
 </form>
+
+</fieldset>
 
 
 {% endblock %}
