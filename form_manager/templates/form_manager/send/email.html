@@ -1,0 +1,13 @@
+There has been a submission to the form: {{ item.name }}
+The submission occured at: {% now "r" %}
+
+{% for field in form %}{% if field.label %}{{ field.label }}: {{ field.data }}{% endif %}
+
+{% endfor %}
+
+{% if files %}
+The following files have been stored on the server:
+{% for file in files %}
+    {{ file }}
+{% endfor %}
+{% endif %}

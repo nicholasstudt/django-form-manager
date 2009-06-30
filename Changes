@@ -1,16 +1,9 @@
 Todo:
-	- Needed for engr
-		- Send email
-		- Save to disk  
-		- Multipage -- 1 form. (disabled)
-
-	- Save data to disk
-	- Send email
-
---- Can do later ---
 	- Add a post submit page if no redirect.
 	- Multipage
 
 Revision history
 
-1.0.0-rc1 :
+1.0.0-rc1 Tue Jun 30 10:29:05 CDT 2009:
+	- Save to csv, send email, file upload all working.
+	

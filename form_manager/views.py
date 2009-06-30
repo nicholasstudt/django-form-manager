@@ -1,8 +1,15 @@
+import codecs
+import os
+
+from django.conf import settings
+from django.core import exceptions
 
 from django import forms
 from django import http, template
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.views.generic import list_detail
+from django.template import loader, Context
 
 from form_manager.models import Form, Element
 from form_manager.forms import RawField, ButtonField
@@ -129,7 +136,12 @@ def index(request, page=0, **kwargs):
 index.__doc__ = list_detail.object_list.__doc__
 
 def form(request, slug=None): 
-   
+ 
+    try:
+        dir = settings.FORM_MANAGER_UPLOAD_DIR
+    except:
+        raise exceptions.ImproperlyConfigured, "FORM_MANAGER_UPLOAD_DIR variable must be defined in settings.py"
+  
     item = get_object_or_404(Form, slug=slug, active=True)
 
     elements = Element.objects.filter(form=item)
@@ -138,18 +150,60 @@ def form(request, slug=None):
         form = _make_form(elements, request.POST, request.FILES)
 
         if form.is_valid():
+            files = []
+
+            # Save files to right directory.
+            if request.FILES:
+                path = os.path.join(dir, item.slug)
+
+                if not os.path.isdir(path):
+                    os.mkdir(path)
+               
+                for file in request.FILES: 
+                    count = 1
+                    name = form.cleaned_data[file].name
+                      
+                    while os.access(os.path.join(path, name), os.R_OK):
+                        count += 1
+                        name = "%s-%s" % (count, form.cleaned_data[file].name)
+                    
+                    form.cleaned_data[file].name = name
+                        
+                    dest = open(os.path.join(path, name), 'wb+') 
+
+                    for chunk in form.cleaned_data[file].chunks():
+                        dest.write(chunk)
+                    dest.close()
+
+                    files.append(name)
 
             if item.store > 0:
-                pass
+              
+                path = os.path.join(dir, "%s.csv" % item.slug)
 
+                t = loader.get_template('form_manager/store/csv.html')
+
+                if os.access(path, os.R_OK):
+                    c = Context({'form': form, 'header': False}) 
+                else:
+                    c = Context({'form': form, 'header': True}) 
+
+                file = codecs.open(path, encoding='utf-8', mode='a') 
+                file.write(t.render(c))
+                file.close()
+                
             if item.send > 0:
-                pass
+                body = loader.render_to_string('form_manager/send/email.html',
+                                               {'form': form, 'item': item,
+                                                'files': files})
+
+                send_mail("[%s] Response" % item.name, body, 
+                          settings.SERVER_EMAIL, [item.owner])
 
             if item.redirect:
                 return redirect(item.redirect)
             
-            # ?
-            
+            return redirect('/')
     else:
         form = _make_form(elements, )
 

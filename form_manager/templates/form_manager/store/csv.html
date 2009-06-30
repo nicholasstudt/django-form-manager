@@ -1,0 +1,2 @@
+{% if header %}{% for field in form %}{% if field.label %}"{{ field.label|addslashes }}"{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}
+{% endif %}{% for field in form %}{% if field.label %}"{{ field.data|addslashes }}"{% if not forloop.last %},{% endif %}{% endif %}{% endfor %} 
