@@ -7,35 +7,17 @@ from django.views.generic import list_detail
 from form_manager.models import Form, Element
 from form_manager.forms import RawField, ButtonField
 
-def index(request, page=0, **kwargs):
-    return list_detail.object_list(
-        request,
-        page = page,
-        paginate_by = 1000,
-        queryset = Form.objects.active(),
-        **kwargs
-    )
-index.__doc__ = list_detail.object_list.__doc__
+def _make_form(elements, *args, **kwargs):
 
-def make_form(elements):
-   
-    # 'text', 'textarea', 'hidden',
-    # 'password', -- Requirements are boolean
-    # 'checkbox', -- Requirements are boolean
-    # 'file', -- Requirements are boolean
-    # 'radio', 'select',
-
-    # 'raw',  
-    # 'image', _('image')),  # Use <button>
-    # 'reset', _('reset')), # Use <button>
-    # 'submit', _('submit')), # Use <button>
-
+    # Must use this to get ordering to work right, can't do the hot type
+    # thing because BaseForm looses ordering for some reason.
+    class _Form(forms.Form):
+        pass
 
     # Stuff all of the form fileds in here.
-    fields = {} 
+    form = _Form(*args, **kwargs)
 
     for e in elements:
-
         args = { 'label': e.label }
 
         # These items are handled in outside of the form.
@@ -47,7 +29,7 @@ def make_form(elements):
             if e.require != 'none': 
                 args['required'] = True
 
-            fields[e.slug] = RawField(**args)
+            form.fields[e.slug] = RawField(**args)
 
         elif e.type in ['image', 'reset', 'submit']:
             args['label'] = ''
@@ -58,7 +40,7 @@ def make_form(elements):
             if e.require != 'none': 
                 args['required'] = True
 
-            fields[e.slug] = ButtonField(**args)
+            form.fields[e.slug] = ButtonField(**args)
 
         elif e.type in ['hidden', 'text', 'textarea']:
             
@@ -68,25 +50,25 @@ def make_form(elements):
                 args['widget'] = forms.HiddenInput
 
             if e.require == 'none':
-                fields[e.slug] = forms.CharField(required=False, **args)
+                form.fields[e.slug] = forms.CharField(required=False, **args)
 
             if e.require == 'date':
-                fields[e.slug] = forms.DateField(**args)
+                form.fields[e.slug] = forms.DateField(**args)
 
             if e.require == 'email':
-                fields[e.slug] = forms.EmailField(**args)
+                form.fields[e.slug] = forms.EmailField(**args)
 
             if e.require == 'number':
-                fields[e.slug] = forms.DecimalField(**args)
+                form.fields[e.slug] = forms.DecimalField(**args)
 
             if e.require == 'text':
-                fields[e.slug] = forms.CharField(**args)
+                form.fields[e.slug] = forms.CharField(**args)
 
             if e.require == 'time':
-                fields[e.slug] = forms.TimeField(**args)
+                form.fields[e.slug] = forms.TimeField(**args)
 
             if e.require == 'url':
-                fields[e.slug] = forms.URLField(**args)
+                form.fields[e.slug] = forms.URLField(**args)
 
         elif e.type in ['radio', 'select']:
 
@@ -106,7 +88,7 @@ def make_form(elements):
             else:
                 args['required'] = True
                         
-            fields[e.slug] = forms.ChoiceField(**args)
+            form.fields[e.slug] = forms.ChoiceField(**args)
 
         elif e.type == 'checkbox':
             if e.require == 'none':
@@ -114,7 +96,7 @@ def make_form(elements):
             else:
                 args['required'] = True
               
-            fields[e.slug] = forms.BooleanField(**args)
+            form.fields[e.slug] = forms.BooleanField(**args)
            
         elif e.type == 'file':
             if e.require == 'none':
@@ -122,7 +104,7 @@ def make_form(elements):
             else:
                 args['required'] = True
               
-            fields[e.slug] = forms.FileField(**args)
+            form.fields[e.slug] = forms.FileField(**args)
 
         elif e.type == 'password':
             args['widget'] = forms.PasswordInpurt
@@ -132,9 +114,19 @@ def make_form(elements):
             else:
                 args['required'] = True
             
-            fields[e.slug] = forms.CharField(**args)
-       
-    return type('ContactForm', (forms.BaseForm,), { 'base_fields': fields })
+            form.fields[e.slug] = forms.CharField(**args)
+    
+    return form
+
+def index(request, page=0, **kwargs):
+    return list_detail.object_list(
+        request,
+        page = page,
+        paginate_by = 1000,
+        queryset = Form.objects.active(),
+        **kwargs
+    )
+index.__doc__ = list_detail.object_list.__doc__
 
 def form(request, slug=None): 
    
@@ -143,11 +135,24 @@ def form(request, slug=None):
     elements = Element.objects.filter(form=item)
     
     if request.method == 'POST': 
-        form = make_form(elements, )(request.POST, request.FILES)
+        form = _make_form(elements, request.POST, request.FILES)
 
+        if form.is_valid():
+
+            if item.store > 0:
+                pass
+
+            if item.send > 0:
+                pass
+
+            if item.redirect:
+                return redirect(item.redirect)
+            
+            # ?
+            
     else:
-        form = make_form(elements, )()
+        form = _make_form(elements, )
 
     return render_to_response('form_manager/form.html', 
-                              {'form': form, 'item': item,},
+                              {'form': form, 'item': item},
                               context_instance=template.RequestContext(request))

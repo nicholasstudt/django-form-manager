@@ -14,18 +14,18 @@ class Form(models.Model):
     """
 
     STORE_CHOICES = (
-        (1, _('Do not save')),
-        (2, _('CSV File')),
-        (3, _('HTML File')),
-        (4, _('Text File')),
+        (0, _('Do not save')),
+        (1, _('CSV File')),
+#        (2, _('HTML File')),
+#        (3, _('Text File')),
     )
 
     SEND_CHOICES = (
         (0, _('Do Not Send')),
         (1, _('Inline Text Only')),
-        (2, _('Attached CSV')),
-        (3, _('Attached HTML')),
-        (4, _('Attached Text')),
+#        (2, _('Attached CSV')),
+#        (3, _('Attached HTML')),
+#        (4, _('Attached Text')),
     )
 
     name = models.CharField(max_length=250) 

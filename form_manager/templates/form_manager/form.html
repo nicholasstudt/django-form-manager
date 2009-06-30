@@ -7,6 +7,7 @@
 {% block content_title %}{% trans "Form listing" %}{% endblock %}
 
 {% block content %}
+
     <h1>{{ item.name }}</h1>
 
     <form method="post" action="{% url form_manager_form item.slug %}"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
@@ -20,10 +21,10 @@
 
 <fieldset class="module aligned {{ fieldset.classes }}"> 
 
-
 {% for field in form %}
   {% if field.is_hidden %}
     {{ field }}
+   
   {% else %}
     <div class="form-row{% if field.errors %} errors{% endif %}">
       {% if field.errors %}{{ field.errors }}{% endif %}
