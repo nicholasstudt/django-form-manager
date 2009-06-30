@@ -41,7 +41,7 @@ class Form(models.Model):
 
     slug = models.SlugField(_('slug'),unique=True)
 
-    store = models.IntegerField(_('Store Locally As'), choices=STORE_CHOICES, default=1)
+    store = models.IntegerField(_('Store Locally As'), choices=STORE_CHOICES, default=0)
     send = models.IntegerField(_('Send Data As'), choices=SEND_CHOICES, default=1)
     
     objects = ActiveManager()
