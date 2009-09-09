@@ -4,10 +4,10 @@ Todo:
 
 Revision history
 
-1.0.0-rc2 Tue Jun 30 12:29:38 CDT 2009:
+1.0.0-20090630 Tue Jun 30 12:29:38 CDT 2009:
 	- Fixed default saves.
 	- Template changes.
 
-1.0.0-rc1 Tue Jun 30 10:29:05 CDT 2009:
+1.0.0 Tue Jun 30 10:29:05 CDT 2009:
 	- Save to csv, send email, file upload all working.
 	
