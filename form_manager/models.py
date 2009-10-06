@@ -64,6 +64,7 @@ class Element(models.Model):
         ('checkbox', _('checkbox')),
         ('file', _('file')),
         ('hidden', _('hidden')),
+        ('honeypot', _('honeypot')),
         ('image', _('image')),  # Use <button>
         ('password', _('password')),
         ('radio', _('radio')),

@@ -27,4 +27,19 @@ class Button(Widget):
                 flatatt(final_attrs),
                 conditional_escape(force_unicode(display))))
 
+class HoneypotWidget(TextInput):
+    """
+    Creates a hidden text input field, that when validated, if the
+    field has a different value in it than when initialized, the form
+    is invalid.  This is used to stop simple SPAM bots.
+    """
+     
+    is_hidden = True
+    def __init__(self, attrs=None, *args, **kwargs):
+        super(HoneypotWidget, self).__init__(attrs, *args, **kwargs)
+        if not self.attrs.has_key('class'):
+            self.attrs['style'] = 'display:none'
 
+    def render(self, *args, **kwargs):
+        value = super(HoneypotWidget, self).render(*args, **kwargs)
+        return value

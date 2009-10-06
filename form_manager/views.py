@@ -36,7 +36,13 @@ def _make_form(elements, *args, **kwargs):
             if e.require != 'none': 
                 args['required'] = True
 
-            form.fields[e.slug] = RawField(**args)
+            form.fields[e.slug] = RawField(**args) 
+
+        elif e.type == 'honeypot':
+            args['label'] = ''
+            args['required'] = False 
+            
+            form.fields[e.slug] = HoneypotField(**args)
 
         elif e.type in ['image', 'reset', 'submit']:
             args['label'] = ''

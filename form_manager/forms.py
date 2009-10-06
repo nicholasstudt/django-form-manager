@@ -1,6 +1,8 @@
 from django.forms import Field
 from form_manager.widgets import Raw, Button
 
+EMPTY_VALUES = (None, '',)
+
 class RawField(Field):
     widget = Raw    
 
@@ -21,3 +23,23 @@ class ButtonField(Field):
 
     def widget_attrs(self, widget):
         return {'display': self.display, 'type': self.button_type }
+
+
+class HoneypotField(Field):
+    """
+    Creates a hidden text input field, that when validated, if the
+    field has a different value in it than when initialized, the form
+    is invalid.  This is used to stop simple SPAM bots.
+    """
+
+    widget = HoneypotWidget
+
+    def clean(self, value):
+
+        # If the value is empty or changed from the initial
+        # invalidate the field.
+        if (self.initial in EMPTY_VALUES and value \
+            in EMPTY_VALUES) or value == self.initial:
+            return value
+
+        raise ValidationError('Honeypot field changed in value.')
