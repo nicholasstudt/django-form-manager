@@ -12,7 +12,7 @@ from django.views.generic import list_detail
 from django.template import loader, Context
 
 from form_manager.models import Form, Element
-from form_manager.forms import RawField, ButtonField
+from form_manager.forms import RawField, ButtonField, HoneypotField
 
 def _make_form(elements, *args, **kwargs):
 

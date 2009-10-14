@@ -1,5 +1,5 @@
 from django.forms import Field
-from form_manager.widgets import Raw, Button
+from form_manager.widgets import Raw, Button, HoneypotWidget
 
 EMPTY_VALUES = (None, '',)
 

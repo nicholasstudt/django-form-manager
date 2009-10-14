@@ -1,4 +1,5 @@
 from django.forms import Widget
+from django.forms import TextInput
 from django.utils.safestring import mark_safe
 from django.utils.html import escape, conditional_escape
 from django.utils.encoding import StrAndUnicode, force_unicode
